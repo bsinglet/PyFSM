@@ -54,6 +54,19 @@ re.match("^define[ ]+init[ ]*=[ ]*[A-Za-z].[A-Za-z0-9]*[ ]*;")
 
 def generate_verilog(inputs, outputs, states):
 	my_verilog = [] # going to produce verilog as a list of strings, each string representing a line
+	# generate module header
+	#my_verilog.append("module
+	# declare module inputs and outputs
+	
+	my_verilog.append("reg [%0:0] state;".format(len(states)-1))
+	next_line = "parameter " # "parameter sA = 2'b0, sB = 2'b1, etc" line
+	for each in range(0, len(states)):
+		if i == len(states)-1:
+			next_line += "%0 = %1b%2;".format(each[0], len(states)-1, i)
+		else:
+			next_line += "%0 = %1b%2,".format(each[0], len(states)-1, i)
+	my_verilog.append(next_line)
+
 	boiler = """always @(posedge clock or negedge reset) begin
 	if(reset)
 		state <= init;
