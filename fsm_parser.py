@@ -42,6 +42,20 @@ def parse_fsm(source):
 			clipped_line = line[len('define state'):]
 			clipped_line.strip()
 			new_symbol = clipped_line[0:clipped_line.find(' ')]
+			clipped_line = clipped_line[len(new_symbol):]
+			clipped_line.strip()
+			clipped_line = clipped_line[1:] # remove equals sign
+			clipped_line.strip()
+			my_stack = []
+			while len(clipped_line) > 0:
+				if clipped_line[0] == '(':
+					my_stack.push(clipped_line[0])
+					clipped_line = clipped_line[1:]
+				
+		
+		else:
+			if (len(line) > 0):
+				print "ERROR: Invalid source line"
 
 	return [inputs, outputs, states]
 
