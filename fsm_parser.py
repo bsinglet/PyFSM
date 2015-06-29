@@ -52,14 +52,22 @@ re.match("^define[ ]+inputs[ ]*=([A-Za-z].[A-Za-z0-9]*[ ]*[,[ ]*[A-Za-z0-9].[A-Z
 # matches one and only one state specified as input state.
 re.match("^define[ ]+init[ ]*=[ ]*[A-Za-z].[A-Za-z0-9]*[ ]*;")
 
+def tabs(num_tabs):
+	text = ""
+	if (num_tabs <= 0):
+		return ""
+	for i in range(0, num_tabs):
+		text += "\t"
+	return text
+
 def generate_verilog(inputs, outputs, states):
 	my_verilog = [] # going to produce verilog as a list of strings, each string representing a line
 	# generate module header
 	#my_verilog.append("module
 	# declare module inputs and outputs
-	
-	my_verilog.append("reg [{0}:0] state;".format(len(states)-1))
-	next_line = "parameter " # "parameter sA = 2'b0, sB = 2'b1, etc" line
+	leading_tabs = 1
+	my_verilog.append(tabs(leading_tabs) + "reg [{0}:0] state;".format(len(states)-1))
+	next_line = "tabs(leading_tabs) + parameter " # "parameter sA = 2'b0, sB = 2'b1, etc" line
 	for each in range(0, len(states)):
 		if i == len(states)-1:
 			next_line += "{0} = {1}b{2};".format(each[0], len(states)-1, i)
@@ -67,13 +75,19 @@ def generate_verilog(inputs, outputs, states):
 			next_line += "{0} = {1}b{2},".format(each[0], len(states)-1, i)
 	my_verilog.append(next_line)
 
-	boiler = """always @(posedge clock or negedge reset) begin
-	if(reset)
-		state <= init;
-	else
-		state <= next_state;
-end"""
-	my_verilog.append(boiler)
+	my_verilog.append(tabs(leading_tabs) + "always @(posedge clock or negedge reset) begin")
+	leading_tabs += 1
+	my_verilog.append(tabs(leading_tabs) + "if(reset)")
+	leading_tabs += 1
+	my_verilog.append(tabs(leading_tabs) + "state <= init;")
+	leading_tabs -= 1
+	my_verilog.append(tabs(leading_tabs) + "else")
+	leading_tabs += 1
+	my_verilog.append(tabs(leading_tabs) + "state <= next_state;")
+	leading_tabs -= 2
+	my_verilog.append(tabs(leading_tabs) + "end")
+	my_verilog.append("")		# want an empty line between always blocks
+	
 	next_line = "always @(state or "
 	for i in range(0, len(inputs)):
 		next_line += inputs[i]
@@ -81,7 +95,22 @@ end"""
 			next_line += " or "
 	next_line += ") begin"
 	my_verilog.append(next_line)
-
+	leading_tabs = 3
+	my_verilog.append(tabs(leading_tabs) + "case(state)")
+	leading_tabs += 1
+	for each in states:
+		my_verilog.append(tabs(leading_tabs) + each[0] + ": begin")
+		leading_tabs += 1
+		# set output for this state
+		# state transition logic
+		# decrease leading_tabs
+	# leading_tabs should be 2 at this point
+	my_verilog.append(tabs(leading_tabs) + "endcase")
+	leading_tabs -= 1
+	my_verilog.append(tabs(leading_tabs) + "end")
+	leading_tabs -= 1
+	my_verilog.append(tabs(leading_tabs) + "endmodule")
+	return my_verilog
 
 # cleans up the user source code, changing tabs to spaces, multiple spaces to single ones, putting each statement on
 # one and only one line.
